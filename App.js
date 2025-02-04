@@ -27,6 +27,7 @@ const App = () => {
     })();
   }, []);
 
+
   const onMapLongPress = (e) => {
     const { latitude, longitude } = e.nativeEvent.coordinate;
     setMarkers([...markers, { latitude, longitude }]);
@@ -39,12 +40,14 @@ const App = () => {
   return (
     <MapView
       style={{ flex: 1 }}
-      initialRegion={region}
+      region={region}
+      onRegionChangeComplete={(newRegion) => setRegion(newRegion)}
       onLongPress={onMapLongPress}
       showsUserLocation
       followUserLocation
       showsMyLocationButton
     >
+      {/* Render markers on the map */}
       {markers.map((marker, index) => (
         <Marker
           key={index}
