@@ -1,20 +1,61 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import * as Location from 'expo-location';
+import React, { useEffect, useState } from 'react';
+import { Alert, View } from 'react-native';
+import MapView, { Marker } from 'react-native-maps';
 
-export default function App() {
+const App = () => {
+  const [region, setRegion] = useState(null);
+  const [markers, setMarkers] = useState([]);
+
+  useEffect(() => {
+    (async () => {
+      let { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert('Permission Denied', 'Location permission is required!');
+        return;
+      }
+
+      const location = await Location.getCurrentPositionAsync({});
+      const { latitude, longitude } = location.coords;
+
+      setRegion({
+        latitude,
+        longitude,
+        latitudeDelta: 0.0922,
+        longitudeDelta: 0.0421,
+      });
+    })();
+  }, []);
+
+  const onMapLongPress = (e) => {
+    const { latitude, longitude } = e.nativeEvent.coordinate;
+    setMarkers([...markers, { latitude, longitude }]);
+  };
+
+  if (!region) {
+    return <View />;
+  }
+
   return (
-    <View style={styles.container}>
-      <Text>Open up App.js to start working on your app!</Text>
-      <StatusBar style="auto" />
-    </View>
+    <MapView
+      style={{ flex: 1 }}
+      initialRegion={region}
+      onLongPress={onMapLongPress}
+      showsUserLocation
+      followUserLocation
+      showsMyLocationButton
+    >
+      {markers.map((marker, index) => (
+        <Marker
+          key={index}
+          coordinate={{
+            latitude: marker.latitude,
+            longitude: marker.longitude,
+          }}
+        />
+      ))}
+    </MapView>
   );
-}
+};
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
+export default App;
